@@ -1,0 +1,19 @@
+{
+  "name": "aws-rest-service-template",
+  "version": "1.0.0",
+  "description": "Dummy REST Service built using AWS API Gateway",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarthakj178/AWSRestServiceTemplate.git"
+  },
+  "author": "Sarthak Jain (sarthakj178@gmail.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarthakj178/AWSRestServiceTemplate/issues"
+  },
+  "homepage": "https://github.com/sarthakj178/AWSRestServiceTemplate#readme"
+}

@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+   aws-rest-service-template 
+    Dummy REST Service built using AWS API Gateway
+
+Globals:
+    Function:
+        Timeout: 5
+    Api:
+        Cors:
+            AllowMethods: "'*'"
+            AllowHeaders: "'Origin,X-Requested-With,Content-Type,content-type,Accept'"
+            AllowOrigin: "'*'"
+
+
+Resources:
+    ApiGateway:
+        Type: AWS::Serverless::Api
+        Properties:
+            StageName: Prod
+            DefinitionBody:
+                swagger: "2.0"
+                info:
+                    version: "1.0"
+                    title: "AwsRestServiceTemplate"
+                paths:
+                    /ping:
+                        x-amazon-apigateway-any-method:
+                            responses: {}
+                            x-amazon-apigateway-integration:
+                                httpMethod: post
+                                type: aws_proxy
+                                uri:
+                                    Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PingFunction.Arn}/invocations
+    
+    PingFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: .
+            Handler: index.ping
+            Runtime: nodejs8.10
+    PingFunctionPermission:
+        Type: AWS::Lambda::Permission
+        Properties:
+            Action: lambda:InvokeFunction
+            FunctionName: !Ref PingFunction
+            Principal: apigateway.amazonaws.com
