@@ -61,11 +61,33 @@ Resources:
                     /auth-ping:
                         x-amazon-apigateway-any-method:
                             responses: {}
+                        post:
+                            x-amazon-apigateway-request-validator: 'Validate body'
+                            parameters:
+                                - in: 'body'
+                                  name: 'PingInput'
+                                  required: true
+                                  schema:
+                                      $ref: '#/definitions/PingInput'
                             x-amazon-apigateway-integration:
                                 httpMethod: post
                                 type: aws_proxy
                                 uri:
                                     Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PingFunction.Arn}/invocations
+                x-amazon-apigateway-request-validators:
+                    Validate body:
+                        validateRequestParameters: true
+                        validateRequestBody: true
+                definitions:
+                    PingInput:
+                        type: 'object'
+                        required:
+                            - 'requiredKey'
+                        properties:
+                            requiredKey:
+                                type: 'string'
+                            optionalKey:
+                                type: 'string'
 
     ApiKey:
         Type: AWS::ApiGateway::ApiKey
