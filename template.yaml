@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-   aws-rest-service-template 
-    Dummy REST Service built using AWS API Gateway
+    aws-rest-service-template 
+     Dummy REST Service built using AWS API Gateway
 
 Globals:
     Function:
@@ -13,17 +13,16 @@ Globals:
             AllowHeaders: "'Origin,X-Requested-With,Content-Type,content-type,Accept'"
             AllowOrigin: "'*'"
 
-
 Resources:
     ApiGateway:
         Type: AWS::Serverless::Api
         Properties:
             StageName: Prod
             DefinitionBody:
-                swagger: "2.0"
+                swagger: '2.0'
                 info:
-                    version: "1.0"
-                    title: "AwsRestServiceTemplate"
+                    version: '1.0'
+                    title: 'AwsRestServiceTemplate'
                 paths:
                     /ping:
                         x-amazon-apigateway-any-method:
@@ -33,7 +32,7 @@ Resources:
                                 type: aws_proxy
                                 uri:
                                     Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PingFunction.Arn}/invocations
-    
+
     PingFunction:
         Type: AWS::Serverless::Function
         Properties:
@@ -46,3 +45,55 @@ Resources:
             Action: lambda:InvokeFunction
             FunctionName: !Ref PingFunction
             Principal: apigateway.amazonaws.com
+
+    AuthApiGateway:
+        Type: AWS::Serverless::Api
+        Properties:
+            StageName: Prod
+            Auth:
+                ApiKeyRequired: 'true'
+            DefinitionBody:
+                swagger: '2.0'
+                info:
+                    version: '1.0'
+                    title: 'AwsRestServiceTemplate'
+                paths:
+                    /auth-ping:
+                        x-amazon-apigateway-any-method:
+                            responses: {}
+                            x-amazon-apigateway-integration:
+                                httpMethod: post
+                                type: aws_proxy
+                                uri:
+                                    Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PingFunction.Arn}/invocations
+
+    ApiKey:
+        Type: AWS::ApiGateway::ApiKey
+        Properties:
+            Name: DummyApiKey
+            Enabled: 'true'
+            StageKeys:
+                - RestApiId: !Ref AuthApiGateway
+                  StageName: Prod
+
+    UsagePlan:
+        Type: AWS::ApiGateway::UsagePlan
+        Properties:
+            ApiStages:
+                - ApiId: !Ref ApiGateway
+                  Stage: Prod
+            Description: Dummy Usage Plan
+            Quota:
+                Limit: 1
+                Period: MONTH
+            Throttle:
+                BurstLimit: 1
+                RateLimit: 1
+            UsagePlanName: DummyUsagePlan
+
+    UsagePlanKey:
+        Type: AWS::ApiGateway::UsagePlanKey
+        Properties:
+            KeyId: !Ref ApiKey
+            KeyType: API_KEY
+            UsagePlanId: !Ref UsagePlan
